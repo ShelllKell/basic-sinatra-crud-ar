@@ -8,4 +8,3 @@ gem "capybara"
 gem "rake"
 gem "launchy"
 gem "gschool_database_connection", "~> 1.0.0"
-
