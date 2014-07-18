@@ -1,19 +1,13 @@
 <!--LOGGED IN-->
 
 <% unless session[:user] == nil %>
-  <h1>The Login Page</h1>
+
 
   <h1>Welcome, <%= session[:user]["username"] %>!</h1>
 
-  <form action="/logout" method="post">
-
-    <input type="submit" class="button" value="logout"/>
-
-  </form>
-
   <!-- List of users -->
 
-  <h2>Users:</h2>
+  <h2>Users</h2>
 
   <!-- add table with 2 columns (Username, Actions - contains delete button) -->
   <table border="1" style="width:300px">
@@ -24,9 +18,10 @@
 <!---->
 
     <% @users.each do |user| %>
+
       <% unless user == (session[:user]["username"]) %>
         <tr>
-          <td><%= user %></td>
+          <td><a href="/<%= user%>"><%= user %></a></td>
           <td><a href="/delete/<%= user %>">Delete</a></td>
         </tr>
       <% end %>
@@ -50,7 +45,7 @@
 
 
 
-  <h2>Fishies:</h2>
+  <h2>Fishies</h2>
   <!-- add table with two columns and separate wikipedia link from names -->
 
 
@@ -59,30 +54,25 @@
       <td><%= "Name" %></td>
       <td><%= "Actions" %></td>
     </tr>
-
     <% @fish.each do |fish| %>
 
       <tr>
         <td><%= fish["fish_name"] %></td>
-        <td><a href="<%= fish["wikipage"] %>">Wikipedia</a></td>
+        <td><a href="<%= fish["wikipage"] %>" target="_blank">Wikipedia</a></td>
       </tr>
     <% end %>
   </table>
+
   <p></p>
-  <form action="/add_fish" method="post" style="display: inline;">
+  <a href="/add_fish">
+    <input type="submit" class="button_big" value="Create Fish"/>
+  </a>
 
-    <div class="form-element">
-      <label for="fish_name">Fish name:</label>
-      <input type="text" id="fish_name" name="fish_name" required/>
-    </div>
+  <p></p>
+  <p></p>
+  <form action="/logout" method="post">
 
-    <div class="form-element">
-      <label for="wikipage">Wikipage: </label>
-      <input type="url" id="wikipage" name="wikipage" required/>
-    </div>
-    <p></p>
-    <input type="submit" class="button" value="Add Fish"/>
-
+    <input type="submit" class="button" value="Logout"/>
 
   </form>
 

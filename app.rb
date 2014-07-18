@@ -4,6 +4,7 @@ require "rack-flash"
 require "gschool_database_connection"
 require "./lib/users_table"
 require "./lib/fish_table"
+require "./lib/favorite_fish_table"
 
 class App < Sinatra::Application
   enable :sessions
@@ -18,6 +19,9 @@ class App < Sinatra::Application
     @fish_table = FishTable.new(
       GschoolDatabaseConnection::DatabaseConnection.establish(ENV["RACK_ENV"])
     )
+    @favorite_fish_table = FavoriteFishTable.new(
+      GschoolDatabaseConnection::DatabaseConnection.establish(ENV["RACK_ENV"])
+    )
   end
 
 
@@ -26,6 +30,7 @@ class App < Sinatra::Application
 
     if session[:user]
       @fish = @fish_table.find_fish(session[:user]["id"])
+
     end
     if session[:order]
       @users = @users_table.alphabetize(session[:order])
@@ -37,6 +42,37 @@ class App < Sinatra::Application
     erb :register
   end
 
+  get "/add_fish" do
+    erb :new_fish
+  end
+
+  get "/delete/:username" do
+    @users_table.delete_user(params[:username])
+    redirect "/"
+  end
+
+  get "/:fish_user" do
+
+    fish_user = @users_table.find(params[:fish_user])
+
+    @fish = @fish_table.find_fish(fish_user["id"])
+
+    erb :display_fish, :locals => {:fish => @fish, :users => @users, :fish_user => fish_user}
+
+  end
+
+  get "/add_favorite/:id" do
+    fish = @fish_table.find_by_id(params[:id]).first
+    @favorite_fish = @favorite_fish_table.add_favorite(session[:user]["id"], fish["id"])
+
+    redirect back
+  end
+
+  get "/delete_favorite/:id" do
+    fish = @fish_table.find_by_id(params[:id]).first
+    @favorite_fish = @favorite_fish_table.delete_favorite(session[:user]["id"], fish["id"])
+    redirect back
+  end
 
   post "/sessions" do
 
@@ -69,8 +105,10 @@ class App < Sinatra::Application
   end
 
   post "/register" do
-
-    if (params[:username] || params[:password]) == ""
+    if params[:username] == ""
+      flash[:error] = "Please fill in all fields."
+      redirect "/register"
+    elsif params[:password] == ""
       flash[:error] = "Please fill in all fields."
       redirect "/register"
     elsif  @users_table.find_username(params[:username])
@@ -80,7 +118,7 @@ class App < Sinatra::Application
     end
 
     flash[:notice] = "Thank you for registering"
-    @users = @users_table.create(params[:username],params[:password])
+    @users = @users_table.create(params[:username], params[:password])
     redirect "/"
   end
 
@@ -94,13 +132,12 @@ class App < Sinatra::Application
     redirect "/"
   end
 
-
-  get "/delete/:username" do
-    @users_table.delete_user(params[:username])
-    redirect "/"
-  end
-
   post "/add_fish" do
+    if params[:fish_name] == ""
+      flash[:error] = "Fish must have a name."
+      redirect "/add_fish"
+    end
+
     @fish_table.create_fish(params["fish_name"], params["wikipage"], session[:user]["id"])
     redirect "/"
   end

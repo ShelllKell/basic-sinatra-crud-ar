@@ -1,0 +1,34 @@
+<h2><%= params[:fish_user] %>'s Fish:</h2>
+
+<table border="1" style="width:300px">
+  <tr>
+    <td><%= "Name" %></td>
+    <td><%= "Action" %></td>
+    <td><%= "Favorite" %></td>
+  </tr>
+
+  <% @fish.each do |fish| %>
+
+
+    <tr>
+      <td><%= fish["fish_name"] %></td>
+      <td><a href="<%= fish["wikipage"] %>" target="_blank">Wikipedia</a></td>
+
+
+      <% if @favorite_fish_table.find_favorite(session[:user]["id"], fish["id"]) == [] %>
+        <td><a href="/add_favorite/<%= fish["id"] %>">Favorite</a></td>
+      <% else %>
+        <td><a href="/delete_favorite/<%= fish["id"] %>">Favorited!</a></td>
+      <% end %>
+
+    </tr>
+
+  <% end %>
+
+
+</table>
+<p></p>
+
+<form action="/" method="get">
+  <input type="submit" class="button" value="Back to Homepage"/>
+</form>
